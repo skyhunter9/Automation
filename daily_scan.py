@@ -5,7 +5,9 @@ from datetime import date
 import csv
 import pandas as pd
 import getpass
-import win32com.client as win32
+#import win32com.client as win32
+from tqdm import tqdm
+import time
 
 def fetch_scan_id():
 
@@ -49,7 +51,6 @@ def fetch_scan_id():
 			#print(item [item.find(titletag)+len(titletag) : ])
 			scan_name.append(item [item.find(titletag)+len(titletag) : ])
 	
-	print(len(scan_name), len(scan_id))
 
 	for i in range(0,len(scan_name)):
 		
@@ -124,19 +125,17 @@ def export_csv(data,name):
 		print(ips)
 		fetch_report(filen,ips)
 
-
-	print('Sending Mail now .....')
-	send_email(filen,name)
 	#print("sev 4 & 5 are:")
 	#reader = csv.reader(open(r"scan_HAL.csv"),delimiter=',')
 	#filtered = filter(lambda p: '45' == p[8], reader)
 	#print(list(filtered))
 
+'''
 def send_email(filename,name):
-	s = "C:/Users/ksthakur/Desktop/Innovation Project/"
+	s = "xxxxxxxxx"
 	outlook = win32.Dispatch('outlook.application')
 	mail = outlook.CreateItem(0)
-	mail.To = 'ksthakur@deloitte.com'
+	mail.To = 'xxxxxxxxx'
 	mail.Subject = 'DO NOT REPLY -- Daily External Scan '+name
 	mail.Body = """
 	Hi All,
@@ -156,6 +155,7 @@ def send_email(filename,name):
 	mail.Attachments.Add(attachment)
 	mail.Send()
 	print('mail sent successfully')
+	'''
 
 
 def fetch_report(filename,ips):
@@ -176,9 +176,44 @@ def fetch_report(filename,ips):
 	}
 	
 	response = requests.request("POST", url, headers=headers, data=payload, files=files)
-	print("HAL Report")
+	print("Launching HAL Report.......")
 	print(response.status_code)
 	s = response.text
+	start = "<TEXT>"
+	end = "</TEXT>"
+	vstart = "<VALUE>"
+	vend = "</VALUE>"
+
+	for item in s.split(end):
+	  if start in item:
+	    #print(item [item.find(start)+len(start) : ])
+	    print(item [item.find(start)+len(start) : ])
+
+	for item in s.split(vend):
+	  if start in item:
+	    #print(item [item.find(start)+len(start) : ])
+	    r_id = (item [item.find(vstart)+len(vstart) : ])
+
+	for i in tqdm (range (101),
+			desc="Processing Report...",
+			ascii=False, ncols=75):
+	time.sleep(0.3)
+
+
+	url = "https://qualysapi.qg2.apps.qualys.com/api/2.0/fo/report/?action=fetch"
+	payload={
+	'id' = r_id
+	}
+	files=[
+	
+	]
+	headers = {
+	  'X-Requested-With': 'QualysPostman',
+	  'Authorization': auth
+	}
+	
+	response = requests.request("POST", url, headers=headers, data=payload, files=files)
+
 	print("Writing Data to File.......")
 	file = 	open("REPORT_"+filename,"w")
 	file.write(s)
