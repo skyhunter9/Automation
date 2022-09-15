@@ -194,15 +194,11 @@ def fetch_report(filename,ips):
 	    #print(item [item.find(start)+len(start) : ])
 	    r_id = (item [item.find(vstart)+len(vstart) : ])
 
-	for i in tqdm (range (101),
-			desc="Processing Report...",
-			ascii=False, ncols=75):
-	time.sleep(0.3)
-
+	print(r_id)
 
 	url = "https://qualysapi.qg2.apps.qualys.com/api/2.0/fo/report/?action=fetch"
 	payload={
-	'id' = r_id
+	'id' : r_id
 	}
 	files=[
 	
@@ -211,11 +207,17 @@ def fetch_report(filename,ips):
 	  'X-Requested-With': 'QualysPostman',
 	  'Authorization': auth
 	}
+
+	for i in tqdm (range (201),
+			desc="Processing Report...",
+			ascii=False, ncols=75):
+		time.sleep(0.6)
 	
 	response = requests.request("POST", url, headers=headers, data=payload, files=files)
+	s = response.text
 
 	print("Writing Data to File.......")
-	file = 	open("REPORT_"+filename,"w")
+	file = 	open("REPORT_"+filename,"w", newline= '')
 	file.write(s)
 	file.close()
 	print("Success!")
